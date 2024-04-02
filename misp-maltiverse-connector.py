@@ -38,13 +38,17 @@ class MispMaltiverseHandler:
     def get_organization_name_from_org_id(self, org_id):
         return self.organizations[str(org_id)]
 
-    def get_misp_attributes(self, publish_timestamp="1h", to_ids=None):
+    def get_misp_attributes(
+        self, publish_timestamp="1h", to_ids=None, org=None, event_id=None
+    ):
         attributes = self.misp.search(
             controller="attributes",
-            to_ids=to_ids,
             pythonify=True,
             include_context=True,
             enforce_warninglist=True,
+            to_ids=to_ids,
+            org=org,
+            eventid=event_id,
             publish_timestamp=publish_timestamp,
         )
         return attributes
@@ -171,11 +175,14 @@ class MispMaltiverseHandler:
         return ret
 
     def upload_last_attributes_to_maltiverse(
-        self, publish_timestamp="1h", upload=False, to_ids=None
+        self, publish_timestamp="1h", upload=False, to_ids=None, org=None, event_id=None
     ):
         result = []
         attributes = self.get_misp_attributes(
-            publish_timestamp=publish_timestamp, to_ids=to_ids
+            publish_timestamp=publish_timestamp,
+            to_ids=to_ids,
+            org=org,
+            event_id=event_id,
         )
         for attribute in attributes:
             maltiverse_obj = self.convert_misp_attribute_to_maltiverse_ioc(attribute)
@@ -248,6 +255,18 @@ if __name__ == "__main__":
         default=None,
         help="Select if you want to filter only to_ids attributes. (0 | 1 | None)",
     )
+    parser.add_argument(
+        "--filter-org",
+        dest="org",
+        default=None,
+        help="Filter events by Organization ID",
+    )
+    parser.add_argument(
+        "--filter-eventid",
+        dest="eventid",
+        default=None,
+        help="Filter events by Event ID",
+    )
 
     arguments = parser.parse_args()
 
@@ -261,4 +280,6 @@ if __name__ == "__main__":
         publish_timestamp=arguments.publish_timestamp,
         upload=True,
         to_ids=arguments.to_ids,
+        org=arguments.eventid,
+        eventid=arguments.eventid,
     )
