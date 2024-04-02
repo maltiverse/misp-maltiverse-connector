@@ -281,5 +281,5 @@ if __name__ == "__main__":
         upload=True,
         to_ids=arguments.to_ids,
         org=arguments.eventid,
-        eventid=arguments.eventid,
+        event_id=arguments.eventid,
     )
