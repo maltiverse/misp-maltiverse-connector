@@ -53,10 +53,14 @@ class MispMaltiverseHandler:
         )
         return attributes
 
-    def convert_misp_attribute_to_maltiverse_ioc(self, attribute):
+    def convert_misp_attribute_to_maltiverse_ioc(self, attribute, tag_maltiverse=None):
         ret = None
         tag = []
         description = attribute.comment
+
+        if tag_maltiverse:
+            for t in tag_maltiverse.split(","):
+                tag.append(t)
 
         misp_event = attribute.Event
         tag.append(f"misp_event_id:{misp_event.id}")
@@ -175,7 +179,13 @@ class MispMaltiverseHandler:
         return ret
 
     def upload_last_attributes_to_maltiverse(
-        self, publish_timestamp="1h", upload=False, to_ids=None, org=None, event_id=None
+        self,
+        publish_timestamp="1h",
+        upload=False,
+        tag_maltiverse=None,
+        to_ids=None,
+        org=None,
+        event_id=None,
     ):
         result = []
         attributes = self.get_misp_attributes(
@@ -185,7 +195,9 @@ class MispMaltiverseHandler:
             event_id=event_id,
         )
         for attribute in attributes:
-            maltiverse_obj = self.convert_misp_attribute_to_maltiverse_ioc(attribute)
+            maltiverse_obj = self.convert_misp_attribute_to_maltiverse_ioc(
+                attribute, tag_maltiverse=tag_maltiverse
+            )
             if maltiverse_obj and upload:
                 res = self.upload_object_to_maltiverse(maltiverse_obj)
         return result
@@ -250,6 +262,12 @@ if __name__ == "__main__":
         help="Specifies the time window of events retrieved from MISP. Default 1h",
     )
     parser.add_argument(
+        "--add-tag-maltiverse",
+        dest="add_tag_maltiverse",
+        default=None,
+        help="Specifies a list of comma separated tags to add to Maltiverse IoCs",
+    )
+    parser.add_argument(
         "--filter-to-ids",
         dest="to_ids",
         default=None,
@@ -279,6 +297,7 @@ if __name__ == "__main__":
     handler.upload_last_attributes_to_maltiverse(
         publish_timestamp=arguments.publish_timestamp,
         upload=True,
+        tag_maltiverse=arguments.add_tag_maltiverse,
         to_ids=arguments.to_ids,
         org=arguments.eventid,
         event_id=arguments.eventid,
