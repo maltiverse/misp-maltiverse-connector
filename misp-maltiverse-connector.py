@@ -63,8 +63,6 @@ class MispMaltiverseHandler:
                 tag.append(t)
 
         misp_event = attribute.Event
-        tag.append(f"misp_event_id:{misp_event.id}")
-        tag.append(f"misp_event_org_id:{misp_event.org_id}")
         tag.append(misp_event.info)
         if "to_ids" in attribute and attribute["to_ids"]:
             tag.append("to_ids")
