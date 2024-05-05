@@ -12,6 +12,7 @@ import argparse
 import requests
 import json
 import hashlib
+import datetime
 from pymisp import PyMISP
 from validators import ip_address
 from urlextract import URLExtract
@@ -77,9 +78,12 @@ class MispMaltiverseHandler:
         }
 
         if "publish_timestamp" in misp_event:
-            blacklist["first_seen"] = misp_event["publish_timestamp"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            if int(misp_event["publish_timestamp"]) > 0:
+                blacklist["first_seen"] = misp_event["publish_timestamp"].strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            else:
+                blacklist["first_seen"] = datetime.datetime.now(datetime.timezone.utc)
             blacklist["last_seen"] = blacklist["first_seen"]
 
         print("################# attribute #################")
@@ -169,9 +173,12 @@ class MispMaltiverseHandler:
             }
 
         if ret and "publish_timestamp" in misp_event:
-            ret["creation_time"] = str(
-                misp_event["publish_timestamp"].strftime("%Y-%m-%d %H:%M:%S")
-            )
+            if int(misp_event["publish_timestamp"]) > 0:
+                ret["creation_time"] = str(
+                    misp_event["publish_timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+                )
+            else:
+                ret["creation_time"] = datetime.datetime.now(datetime.timezone.utc)
             ret["modification_time"] = ret["creation_time"]
 
         return ret
