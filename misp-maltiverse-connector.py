@@ -40,8 +40,11 @@ class MispMaltiverseHandler:
         return self.organizations[str(org_id)]
 
     def get_misp_attributes(
-        self, publish_timestamp="1h", to_ids=None, org=None, event_id=None
+        self, publish_timestamp="1h", to_ids=None, org=None, event_id=None, tags=None
     ):
+        t = None
+        if tags:
+            t = tags.split(",")
         attributes = self.misp.search(
             controller="attributes",
             pythonify=True,
@@ -50,6 +53,7 @@ class MispMaltiverseHandler:
             to_ids=to_ids,
             org=org,
             eventid=event_id,
+            tags=t,
             publish_timestamp=publish_timestamp,
         )
         return attributes
@@ -191,6 +195,7 @@ class MispMaltiverseHandler:
         to_ids=None,
         org=None,
         event_id=None,
+        tags=None,
     ):
         result = []
         attributes = self.get_misp_attributes(
@@ -198,6 +203,7 @@ class MispMaltiverseHandler:
             to_ids=to_ids,
             org=org,
             event_id=event_id,
+            tags=tags,
         )
         for attribute in attributes:
             maltiverse_obj = self.convert_misp_attribute_to_maltiverse_ioc(
@@ -290,6 +296,12 @@ if __name__ == "__main__":
         default=None,
         help="Filter events by Event ID",
     )
+    parser.add_argument(
+        "--filter-tags",
+        dest="filter_tags",
+        default=None,
+        help="Filter events by MISP Tags. You can specify a list of comma separated tags to filter by",
+    )
 
     arguments = parser.parse_args()
 
@@ -306,4 +318,5 @@ if __name__ == "__main__":
         to_ids=arguments.to_ids,
         org=arguments.eventid,
         event_id=arguments.eventid,
+        tags=arguments.filter_tags,
     )
